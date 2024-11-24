@@ -1,0 +1,77 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@import './lib/animations.css';
+
+@layer base {  
+  :root  {
+    --background: 226 4% 95%;
+    --foreground: 226 4% 10%;
+    --card: 226 4% 94%;
+    --card-foreground: 226 4% 15%;
+    --popover: 226 4% 95%;
+    --popover-foreground: 226 95% 10%;
+    --primary: 226 63% 46%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 226 10% 90%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 188 10% 94%;
+    --muted-foreground: 226 4% 40%;
+    --accent: 188 10% 90%;
+    --accent-foreground: 226 4% 15%;
+    --destructive: 0 50% 50%;
+    --destructive-foreground: 226 4% 94%;
+    --border: 226 20% 82%;
+    --input: 226 20% 50%;
+    --ring: 226 63% 46%;
+    --radius: 0.5rem;
+  }
+  .dark  {
+    --background: 226 10% 10%;
+    --foreground: 226 4% 94%;
+    --card: 226 4% 10%;
+    --card-foreground: 226 4% 94%;
+    --popover: 226 10% 5%;
+    --popover-foreground: 226 4% 94%;
+    --primary: 226 63% 46%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 226 10% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 188 10% 25%;
+    --muted-foreground: 226 4% 65%;
+    --accent: 188 10% 25%;
+    --accent-foreground: 226 4% 94%;
+    --destructive: 0 50% 50%;
+    --destructive-foreground: 226 4% 94%;
+    --border: 226 20% 50%;
+    --input: 226 20% 50%;
+    --ring: 226 63% 46%;
+    --radius: 0.5rem;
+  }
+
+  html {
+    --view-transition-duration: 300ms;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+  }
+
+  *, *::before, *::after {
+    box-sizing: inherit;
+    -webkit-box-sizing: inherit;
+  }
+
+  /* only use API for page transitions */
+  ::view-transition-group(root) {
+    animation: none;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
