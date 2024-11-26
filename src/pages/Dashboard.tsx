@@ -3,8 +3,9 @@
 import AccountCircle from '@/assets/svgs/AccountCircle'
 import Loader from '@/components/Loader'
 import Navbar from '@/components/Navbar'
+import Separator from '@/components/Separator'
 import { Button } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuGroup, DropdownMenuLabel } from '@/components/ui/dropdown-menu'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Viewport, ViewportHeader, ViewportMain } from '@/components/Viewport'
 import { auth } from '@/config/firebase'
 import { useNavigation } from '@/hooks/navigation'
@@ -37,29 +38,34 @@ export const ProfileNavAction: React.FC = () => {
     navigation('/home', { animation: 'zoom-out' });
     signOut(auth).finally(() => setIsLoading(false));
   }
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+  function handleNavigation() {
+    navigation('/dashboard', { animation: 'zoom-in' });
+  }
+
+  const SheetMenu = (
+    <Sheet>
+      <SheetTrigger asChild>
         <Button variant='ghost' className='p-1 h-auto [&_svg]:size-8 rounded-full'>
           { isLoading ? <Loader className='size-full border-[0.2rem]' /> : <AccountCircle /> }
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent style={{ viewTransitionName: 'nav-dropdown' }}>
-        <DropdownMenuLabel>Profile</DropdownMenuLabel>
-        <DropdownMenuGroup>
-          <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => navigation('/dashboard', { animation: 'zoom-in' })}>
-              Dashboard
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem onClick={handleLogout}>
-              Logout
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </SheetTrigger>
+      <SheetContent style={{ viewTransitionName: 'nav-sheet' }}>
+        <SheetHeader>
+          <SheetTitle className='text-2xl lg:text-lg'>Profile</SheetTitle>
+        </SheetHeader>
+        <div className='py-6 lg:py-4 space-y-4 lg:space-y-2 [&_button]:w-full [&_button]:justify-start [&_button]:text-lg lg:[&_button]:text-sm'>
+          <div>
+            <Button variant='ghost' onClick={handleNavigation}>Dashboard</Button>
+            <Button variant='ghost'>Settings</Button>
+          </div>
+          <Separator />
+          <div>
+            <Button variant='ghost' onClick={handleLogout}>Logout</Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
+
+  return SheetMenu;
 }

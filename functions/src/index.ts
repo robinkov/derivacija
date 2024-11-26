@@ -42,8 +42,8 @@ export const registerUser = onCall(async (request) => {
     throw new HttpsError('invalid-argument', 'Minimalna duljina lozinke je 6 znakova.', ['password']);
   }
 
-  // check is user with that email address already exists
-  try {
+   // check if user with that email address already exists
+   try {
     const query = getFirestore().collection('users').where('email', '==', email);
     const snapshot = await query.get();
     if (!snapshot.empty) {
@@ -61,9 +61,9 @@ export const registerUser = onCall(async (request) => {
     const userRecord = await getAuth().createUser({ email, password, emailVerified: false });
     await getAuth().setCustomUserClaims(userRecord.uid, customClaims);
     return getAuth().createCustomToken(userRecord.uid, customClaims);
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error when trying to create a user with email and password.');
-    throw new HttpsError('internal', 'Greška kod registriranja korisnika.');
+    throw new HttpsError('internal', error.message);
   }
 
 });
