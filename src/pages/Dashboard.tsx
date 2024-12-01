@@ -10,10 +10,13 @@ import { Viewport, ViewportHeader, ViewportMain } from '@/components/Viewport'
 import { auth } from '@/config/firebase'
 import { useNavigation } from '@/hooks/navigation'
 import { selectAuth } from '@/state/auth/authSlice'
+import RequireAuth from '@/state/auth/RequireAuth'
+import RequireEmailVerified from '@/state/auth/RequireEmailVerified'
+import { Description } from '@radix-ui/react-dialog'
 import { signOut } from 'firebase/auth'
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 
 export default function Dashboard() {
   const user = useSelector(selectAuth);
@@ -23,7 +26,7 @@ export default function Dashboard() {
         <Navbar action={<ProfileNavAction />} />
       </ViewportHeader>
       <ViewportMain alignment='center'>
-        <h1 className='font-semibold text-4xl'>Welcome to Derivacija!</h1>
+        <h1 className='font-semibold text-4xl text-center'>Welcome to Derivacija!</h1>
         <h3 className='font-semibold text-xl text-muted-foreground'>{user.email}</h3>
       </ViewportMain>
     </Viewport>
@@ -49,12 +52,13 @@ export const ProfileNavAction: React.FC = () => {
           { isLoading ? <Loader className='size-full border-[0.2rem]' /> : <AccountCircle /> }
         </Button>
       </SheetTrigger>
-      <SheetContent style={{ viewTransitionName: 'nav-sheet' }}>
+      <SheetContent style={{ viewTransitionName: 'nav-sheet' }} className='overflow-y-auto'>
         <SheetHeader>
           <SheetTitle className='text-2xl lg:text-lg'>Profile</SheetTitle>
+          <Description className='hidden' />
         </SheetHeader>
         <div className='py-6 lg:py-4 space-y-4 lg:space-y-2 [&_button]:w-full [&_button]:justify-start [&_button]:text-lg lg:[&_button]:text-sm'>
-          <div>
+          <div className='space-y-2'>
             <Button variant='ghost' onClick={handleNavigation}>Dashboard</Button>
             <Button variant='ghost'>Settings</Button>
           </div>
@@ -69,3 +73,14 @@ export const ProfileNavAction: React.FC = () => {
 
   return SheetMenu;
 }
+
+export const DashboardRoute = () => <RequireAuth
+  element={
+    <RequireEmailVerified
+      element={<Dashboard />}
+      loadingElement={<Loader fullscreen />}
+      fallbackElement={<Navigate to='/email-verification' replace />}
+    />
+  }
+  loadingElement={<Loader fullscreen />}
+/>;

@@ -7,6 +7,8 @@ import { getFirestore } from 'firebase-admin/firestore'
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { getAuth } from 'firebase-admin/auth'
 import * as logger from 'firebase-functions/logger'
+import { sendVerificationEmail } from './helpers/senders'
+import { emailCodeGenerator } from './helpers/generators'
 
 initializeApp({
   serviceAccountId: 'firebase-adminsdk-53qn9@derivacija-74cc6.iam.gserviceaccount.com',
@@ -43,7 +45,7 @@ export const registerUser = onCall(async (request) => {
   }
 
    // check if user with that email address already exists
-   try {
+  try {
     const query = getFirestore().collection('users').where('email', '==', email);
     const snapshot = await query.get();
     if (!snapshot.empty) {
@@ -92,10 +94,40 @@ export const onUserCreated = functions.auth.user().onCreate(async (user) => {
 
   try {
     const query = getFirestore().collection('users').doc(uid);
-    return query.set({ email, uid });
+    let code;
+    let userObj: any = { email, uid };
+    if (!user.emailVerified) {
+      code = emailCodeGenerator();
+      const verificationRef = await sendVerificationEmail(email, code);
+      userObj = { ...userObj, otpCode: code, otpEmailRef: verificationRef };
+    }
+    return query.set(userObj);
   } catch (error) {
     logger.error('Error adding new user to Firestore.', error);
     return;
   }
 
+});
+
+export const verifyOTPCode = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('permission-denied', 'Korisnik nije ulogiran.');
+  }
+
+  const otpCode: string = request.data.otpCode.trim();
+
+  if (otpCode.length !== 6) {
+    throw new HttpsError('invalid-argument', 'Kod nije unesen.');
+  }
+
+  const response = await getFirestore().collection('users').where('otpCode', '==', otpCode).get();
+
+  // if response is empty or OTP code does not belong to this user
+  if (response.empty || response.docs.filter((doc) => doc.data().email === request.auth?.token.email).length === 0) {
+    throw new HttpsError('invalid-argument', 'Uneseni kod je netočan.');
+  }
+
+  const uid = request.auth.uid;
+
+  return getAuth().updateUser(uid, { emailVerified: true });
 });

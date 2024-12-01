@@ -32,10 +32,7 @@ export default function RegisterForm() {
   const registerUser = httpsCallable(functions, 'registerUser');
   function handleGoogleLogin() {
     const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider)
-      .catch((error) => {
-        console.error(error);
-      });
+    signInWithPopup(auth, provider);
   }
   function handleEmailPasswordRegister(event: FormEvent) {
     event.preventDefault();
