@@ -3,7 +3,7 @@
 // firebase admin sdk
 import { initializeApp } from 'firebase-admin/app'
 import * as functions from 'firebase-functions/v1'
-import { getFirestore } from 'firebase-admin/firestore'
+import { DocumentReference, getFirestore, Timestamp } from 'firebase-admin/firestore'
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { getAuth } from 'firebase-admin/auth'
 import * as logger from 'firebase-functions/logger'
@@ -130,4 +130,46 @@ export const verifyOTPCode = onCall(async (request) => {
   const uid = request.auth.uid;
 
   return getAuth().updateUser(uid, { emailVerified: true });
+});
+
+export const resendOTPCode = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('permission-denied', 'Korisnik nije ulogiran.');
+  }
+
+  if (request.auth.token.email_verified) {
+    throw new HttpsError('cancelled', 'Korisnik je već potvrdio email adresu.');
+  }
+  
+  const uid = request.auth.uid;
+  const email = request.auth.token.email;
+  const userDocSnapshot = await getFirestore().collection('users').doc(uid).get();
+  const userDocData = userDocSnapshot.data();
+  const code = emailCodeGenerator();
+  
+  if (userDocData?.otpEmailRef) {
+    const otpEmailRef = userDocData.otpEmailRef as DocumentReference;
+    const emailDocData = (await otpEmailRef.get()).data();
+
+    if (!emailDocData?.delivery?.endTime) throw new HttpsError('internal', 'Email dokument ne sadržava vrijeme slanja.');
+    
+    const timestamp = emailDocData.delivery.endTime as Timestamp;
+    const resendAfter = 60 * 1000 // one minute
+    
+    if ((timestamp.toMillis() + resendAfter) >= Date.now()) {
+      throw new HttpsError('resource-exhausted', 'Pričekaj 1 minutu prije slanja idućeg koda.');
+    }
+  }
+
+  try {
+    if (!email) throw new Error('Token ne sadrži email adresu.');
+    const verificationRef = await sendVerificationEmail(email, code);
+    return getFirestore().collection('users').doc(uid).update({
+      otpCode: code,
+      otpEmailRef: verificationRef,
+    });
+  } catch (error) {
+    throw new HttpsError('internal', 'Dogodila se greška.');
+  }
+
 });

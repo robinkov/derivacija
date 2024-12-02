@@ -21,6 +21,7 @@ export default function EmailVerification() {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const verifyOTPCode = httpsCallable(functions, 'verifyOTPCode');
+  const resendOTPCode = httpsCallable(functions, 'resendOTPCode');
   const navigation = useNavigation(useNavigate());
   const dispatch = useDispatch<AppDispatch>();
   function handleVerification(event: FormEvent) {
@@ -35,6 +36,13 @@ export default function EmailVerification() {
         setIsLoading(false);
         setError(error.message);
       });
+  }
+  function handleResend() {
+    setIsLoading(true);
+    resendOTPCode()
+      .then(() => setError(''))
+      .catch((error) => setError(error.message))
+      .finally(() => setIsLoading(false));
   }
   return (
     <Viewport>
@@ -70,12 +78,17 @@ export default function EmailVerification() {
                     { error }
                   </div>
                 }
-                <Button variant='secondary'>
+                <Button variant='secondary' disabled={isLoading}>
                   { isLoading ? <Loader className='size-full border-[0.2rem]' /> : 'Provjeri' }
                 </Button>
               </form>
             </CardContent>
           </Card>
+          <div className='flex justify-center w-full pt-4'>
+            <Button variant='ghost' onClick={handleResend} disabled={isLoading}>
+              { isLoading ? <Loader className='size-full border-[0.2rem]' /> : 'Pošalji ponovno' }
+            </Button>
+          </div>
         </div>
       </ViewportMain>
     </Viewport>
