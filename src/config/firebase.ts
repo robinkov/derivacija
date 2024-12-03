@@ -9,7 +9,7 @@ import { connectFirestoreEmulator } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAfkZkpe1XKyq1p9Z_mCBWVQX6uWu5Pr2g',
-  authDomain: 'derivacija-74cc6.firebaseapp.com',
+  authDomain: 'derivacija.com',
   projectId: 'derivacija-74cc6',
   storageBucket: 'derivacija-74cc6.firebasestorage.app',
   messagingSenderId: '195110696919',
