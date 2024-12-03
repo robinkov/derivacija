@@ -8,7 +8,6 @@ import { Outlet, useMatch, useNavigate } from 'react-router-dom'
 
 export default function Auth() {
   const matchLogin = useMatch('/auth/login/*');
-  const navigation = useNavigation(useNavigate());
 
   const forgotPassword = (
     <ViewportFooter className='flex justify-center py-2'>
@@ -22,12 +21,7 @@ export default function Auth() {
     <Viewport>
       <ViewportMain alignment='center'>
         <div className='max-w-[28rem] w-full space-y-2'>
-          <Button variant='ghost' className='p-2 pr-3 h-auto'
-            onClick={() => navigation('/home', { animation: 'swipe-left' })}
-          >
-            <ArrowLeft className='h-8' />
-            <p>Home</p>
-          </Button>
+          <GoHome />
           <Outlet />
         </div>
       </ViewportMain>
@@ -35,3 +29,15 @@ export default function Auth() {
     </Viewport>
   );
 }
+
+export const GoHome = () => {
+  const navigation = useNavigation(useNavigate());
+  return (
+    <Button variant='ghost' className='p-2 pr-3 h-auto'
+      onClick={() => navigation('/home', { animation: 'swipe-left' })}
+    >
+      <ArrowLeft className='h-8' />
+      <p>Home</p>
+    </Button>
+  );
+};

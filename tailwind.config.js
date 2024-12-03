@@ -1,12 +1,21 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-	darkMode: ["class"],
+	darkMode: ['class'],
 	content: [
-		"./index.html",
-		"./src/**/*.{ts,tsx,js,jsx}",
+		'./index.html',
+		'./src/**/*.{ts,tsx,js,jsx}',
   ],
   theme: {
   	extend: {
+			keyframes: {
+        'caret-blink': {
+          '0%,70%,100%': { opacity: '1' },
+          '20%,50%': { opacity: '0' },
+        },
+      },
+			animation: {
+        'caret-blink': 'caret-blink 1.25s ease-out infinite',
+      },
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
@@ -56,6 +65,6 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require('tailwindcss-animate')],
 }
 

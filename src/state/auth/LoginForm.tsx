@@ -22,10 +22,7 @@ export default function LoginForm() {
   const navigation = useNavigation(useNavigate());
   function handleGoogleLogin() {
     const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider)
-      .catch((error) => {
-        console.error(error.message);
-      });
+    signInWithPopup(auth, provider);
   }
   function handleEmailPasswordLogin(event: FormEvent) {
     event.preventDefault();

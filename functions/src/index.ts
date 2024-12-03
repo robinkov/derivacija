@@ -3,10 +3,12 @@
 // firebase admin sdk
 import { initializeApp } from 'firebase-admin/app'
 import * as functions from 'firebase-functions/v1'
-import { getFirestore } from 'firebase-admin/firestore'
+import { DocumentReference, getFirestore, Timestamp } from 'firebase-admin/firestore'
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { getAuth } from 'firebase-admin/auth'
 import * as logger from 'firebase-functions/logger'
+import { sendVerificationEmail } from './helpers/senders'
+import { emailCodeGenerator } from './helpers/generators'
 
 initializeApp({
   serviceAccountId: 'firebase-adminsdk-53qn9@derivacija-74cc6.iam.gserviceaccount.com',
@@ -43,7 +45,7 @@ export const registerUser = onCall(async (request) => {
   }
 
    // check if user with that email address already exists
-   try {
+  try {
     const query = getFirestore().collection('users').where('email', '==', email);
     const snapshot = await query.get();
     if (!snapshot.empty) {
@@ -92,10 +94,82 @@ export const onUserCreated = functions.auth.user().onCreate(async (user) => {
 
   try {
     const query = getFirestore().collection('users').doc(uid);
-    return query.set({ email, uid });
+    let code;
+    let userObj: any = { email, uid };
+    if (!user.emailVerified) {
+      code = emailCodeGenerator();
+      const verificationRef = await sendVerificationEmail(email, code);
+      userObj = { ...userObj, otpCode: code, otpEmailRef: verificationRef };
+    }
+    return query.set(userObj);
   } catch (error) {
     logger.error('Error adding new user to Firestore.', error);
     return;
+  }
+
+});
+
+export const verifyOTPCode = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('permission-denied', 'Korisnik nije ulogiran.');
+  }
+
+  const otpCode: string = request.data.otpCode.trim();
+
+  if (otpCode.length !== 6) {
+    throw new HttpsError('invalid-argument', 'Kod nije unesen.');
+  }
+
+  const response = await getFirestore().collection('users').where('otpCode', '==', otpCode).get();
+
+  // if response is empty or OTP code does not belong to this user
+  if (response.empty || response.docs.filter((doc) => doc.data().email === request.auth?.token.email).length === 0) {
+    throw new HttpsError('invalid-argument', 'Uneseni kod je netočan.');
+  }
+
+  const uid = request.auth.uid;
+
+  return getAuth().updateUser(uid, { emailVerified: true });
+});
+
+export const resendOTPCode = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('permission-denied', 'Korisnik nije ulogiran.');
+  }
+
+  if (request.auth.token.email_verified) {
+    throw new HttpsError('cancelled', 'Korisnik je već potvrdio email adresu.');
+  }
+  
+  const uid = request.auth.uid;
+  const email = request.auth.token.email;
+  const userDocSnapshot = await getFirestore().collection('users').doc(uid).get();
+  const userDocData = userDocSnapshot.data();
+  const code = emailCodeGenerator();
+  
+  if (userDocData?.otpEmailRef) {
+    const otpEmailRef = userDocData.otpEmailRef as DocumentReference;
+    const emailDocData = (await otpEmailRef.get()).data();
+
+    if (!emailDocData?.delivery?.endTime) throw new HttpsError('internal', 'Email dokument ne sadržava vrijeme slanja.');
+    
+    const timestamp = emailDocData.delivery.endTime as Timestamp;
+    const resendAfter = 60 * 1000 // one minute
+    
+    if ((timestamp.toMillis() + resendAfter) >= Date.now()) {
+      throw new HttpsError('resource-exhausted', 'Pričekaj 1 minutu prije slanja idućeg koda.');
+    }
+  }
+
+  try {
+    if (!email) throw new Error('Token ne sadrži email adresu.');
+    const verificationRef = await sendVerificationEmail(email, code);
+    return getFirestore().collection('users').doc(uid).update({
+      otpCode: code,
+      otpEmailRef: verificationRef,
+    });
+  } catch (error) {
+    throw new HttpsError('internal', 'Dogodila se greška.');
   }
 
 });

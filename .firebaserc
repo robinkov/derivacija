@@ -1,5 +1,13 @@
 {
   "projects": {
     "default": "derivacija-74cc6"
+  },
+  "targets": {},
+  "etags": {
+    "derivacija-74cc6": {
+      "extensionInstances": {
+        "firestore-send-email-88pw": "7254d6fcafc0787938c283055eca5e13bd272cd526572fd62dc8f4ec0cce4d8c"
+      }
+    }
   }
 }
