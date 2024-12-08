@@ -2,7 +2,7 @@ import { flushSync } from 'react-dom'
 import * as Router from 'react-router-dom'
 
 type Animation = {
-  animation: 'swipe-right' | 'swipe-left' | 'zoom-in' | 'zoom-out'
+  animation: 'swipe-right' | 'swipe-left' | 'swipe-down' | 'zoom-in' | 'zoom-out'
 };
 
 type Navigation = (navigate: Router.NavigateFunction) => (to: Router.To, options?: Router.NavigateOptions & Animation) => void;

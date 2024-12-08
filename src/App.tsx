@@ -14,7 +14,8 @@ import LoginForm from '@/state/auth/LoginForm'
 import { DashboardRoute } from '@/pages/Dashboard'
 import RegisterForm from '@/state/auth/RegisterForm'
 import EmailVerification from '@/pages/EmailVerification'
-import RequireEmailVerified from './state/auth/RequireEmailVerified'
+import RequireEmailVerified from '@/state/auth/RequireEmailVerified'
+import PasswordReset, { ChangePasswordForm, SendResetLink } from '@/pages/PasswordReset'
 
 const router = createBrowserRouter(
   [
@@ -52,6 +53,20 @@ const router = createBrowserRouter(
         {
           path: 'register',
           element: <RegisterForm />
+        },      
+        {
+          path: 'password-reset',
+          element: <PasswordReset />,
+          children: [
+            {
+              path: 'send',
+              element: <SendResetLink />
+            },
+            {
+              path: 'change',
+              element: <ChangePasswordForm />
+            }
+          ]
         }
       ]
     },
@@ -67,7 +82,7 @@ const router = createBrowserRouter(
                   fallbackElement={<Navigate to='/home' />}
                   unverified
                 />
-    }
+    },
   ],
 );
 

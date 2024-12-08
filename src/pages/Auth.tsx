@@ -4,14 +4,15 @@ import ArrowLeft from '@/assets/svgs/ArrowLeft'
 import { Button } from '@/components/ui/button'
 import { Viewport, ViewportFooter, ViewportMain } from '@/components/Viewport'
 import { useNavigation } from '@/hooks/navigation'
-import { Outlet, useMatch, useNavigate } from 'react-router-dom'
+import { Navigate, Outlet, useMatch, useNavigate, useOutlet } from 'react-router-dom'
 
 export default function Auth() {
   const matchLogin = useMatch('/auth/login/*');
-
+  const navigation = useNavigation(useNavigate());
+  const outlet = useOutlet();
   const forgotPassword = (
     <ViewportFooter className='flex justify-center py-2'>
-      <Button variant='outline'>
+      <Button variant='outline' onClick={() => navigation('/auth/password-reset/send', { animation: 'swipe-down' })}>
         Forgot password?
       </Button>
     </ViewportFooter>
@@ -22,7 +23,7 @@ export default function Auth() {
       <ViewportMain alignment='center'>
         <div className='max-w-[28rem] w-full space-y-2'>
           <GoHome />
-          <Outlet />
+          {outlet ? <Outlet /> : <Navigate to='/auth/login' replace />}
         </div>
       </ViewportMain>
       {matchLogin && forgotPassword}

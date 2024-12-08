@@ -86,7 +86,7 @@ export default function EmailVerification() {
           </Card>
           <div className='flex justify-center w-full pt-4'>
             <Button variant='ghost' onClick={handleResend} disabled={isLoading}>
-              { isLoading ? <Loader className='size-full border-[0.2rem]' /> : 'Pošalji ponovno' }
+              Pošalji ponovno
             </Button>
           </div>
         </div>

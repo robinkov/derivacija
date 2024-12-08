@@ -3,12 +3,13 @@
 // firebase admin sdk
 import { initializeApp } from 'firebase-admin/app'
 import * as functions from 'firebase-functions/v1'
-import { DocumentReference, getFirestore, Timestamp } from 'firebase-admin/firestore'
+import { DocumentReference, FieldValue, getFirestore, Timestamp } from 'firebase-admin/firestore'
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { getAuth } from 'firebase-admin/auth'
 import * as logger from 'firebase-functions/logger'
-import { sendVerificationEmail } from './helpers/senders'
-import { emailCodeGenerator } from './helpers/generators'
+import { sendResetEmail, sendVerificationEmail } from './helpers/senders'
+import { emailCodeGenerator, oobCodeGenerator } from './helpers/generators'
+import { UserInfo } from 'firebase-functions/v1/auth'
 
 initializeApp({
   serviceAccountId: 'firebase-adminsdk-53qn9@derivacija-74cc6.iam.gserviceaccount.com',
@@ -151,7 +152,7 @@ export const resendOTPCode = onCall(async (request) => {
     const otpEmailRef = userDocData.otpEmailRef as DocumentReference;
     const emailDocData = (await otpEmailRef.get()).data();
 
-    if (!emailDocData?.delivery?.endTime) throw new HttpsError('internal', 'Email dokument ne sadržava vrijeme slanja.');
+    if (!emailDocData?.delivery?.endTime) throw new HttpsError('internal', 'Malo strpljenja, email se još šalje.');
     
     const timestamp = emailDocData.delivery.endTime as Timestamp;
     const resendAfter = 60 * 1000 // one minute
@@ -172,4 +173,83 @@ export const resendOTPCode = onCall(async (request) => {
     throw new HttpsError('internal', 'Dogodila se greška.');
   }
 
+});
+
+export const sendPasswordResetEmail = onCall(async (request) => {
+  const email = request.data.email;
+  const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  if (!email || !emailRegex.test(email)) {
+    throw new HttpsError('invalid-argument', 'Email nije unešen ili je neispravan.')
+  }
+  const oobCode = oobCodeGenerator();
+  const userQuery = getFirestore().collection('users').where('email', '==', email);
+  let querySnapshot;
+  try {
+    const response = await userQuery.get();
+    if (response.empty) {
+      throw new HttpsError('unavailable', 'Korisnik s tom email adresom ne postoji.');
+    }
+    querySnapshot = response.docs[0];
+    let userProviders = (await getAuth().getUser(querySnapshot.id)).providerData as UserInfo[];
+    userProviders = userProviders.filter((e) => e.providerId === 'password');
+    if (userProviders.length === 0) {
+      throw new HttpsError('aborted', 'Korisnik je registriran preko vanjskog pružatelja.');
+    }
+    await getFirestore().collection('users').doc(querySnapshot.id).update({ oobCode });
+    await sendResetEmail(email, oobCode);
+    return;
+  } catch (error) {
+    if (error instanceof HttpsError) {
+      throw new HttpsError(error.code, error.message);
+    }
+    throw new HttpsError('internal', 'Dogodila se greška prilikom slanja.');
+  }
+});
+
+export const changePassword = onCall(async (request) => {
+  const email = request.data.email;
+  const oobCode = request.data.oobCode;
+  const password = request.data.password.trim();
+  const confirmPassword = request.data.confirmPassword.trim();
+
+  if (!email || !oobCode || !password || !confirmPassword) {
+    throw new HttpsError('invalid-argument', 'Neuspješna promjena lozinke!');
+  }
+
+  if (password !== confirmPassword) {
+    throw new HttpsError('invalid-argument', 'Lozinka i potvrda lozinke se ne podudaraju.');
+  }
+
+  try {
+    const userQuery = getFirestore().collection('users').where('email', '==', email);
+    const userSnapshot = await userQuery.get();
+    
+    if (userSnapshot.empty) {
+      throw new HttpsError('invalid-argument', 'Ne postoji korisnik s ovom email adresom.');
+    }
+    const userData = userSnapshot.docs[0].data();
+    const userCode = userData['oobCode'];
+    
+    if (userCode !== oobCode) {
+      throw new HttpsError('aborted', 'Nije dozvoljena promjena lozinke.');
+    }
+
+    try {
+      await getAuth().updateUser(userData['uid'], { password });
+    } catch(error) {
+      throw new HttpsError('invalid-argument', 'Lozinka mora sadržavati minimalno 6 znakova.');
+    }
+
+    await getFirestore().collection('users').doc(userData['uid']).update({
+      oobCode: FieldValue.delete()
+    });
+    
+    return;
+  } catch(error) {
+    if (error instanceof HttpsError) {
+      throw new HttpsError(error.code, error.message);
+    } else {
+      throw new HttpsError('internal', 'Dogodila se neočekivana greška.');
+    }
+  }
 });

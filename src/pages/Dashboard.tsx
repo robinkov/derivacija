@@ -29,7 +29,6 @@ export default function Dashboard() {
       </ViewportHeader>
       <ViewportMain alignment='center'>
         <h1 className='font-semibold text-4xl text-center'>Welcome to Derivacija!</h1>
-        <h1 className='font-semibold text-4xl text-center'>Welcome to Derivacija!</h1>
         <h3 className='font-semibold text-xl text-muted-foreground'>{user.email}</h3>
       </ViewportMain>
     </Viewport>

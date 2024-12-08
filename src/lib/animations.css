@@ -34,6 +34,24 @@
   }
 }
 
+@keyframes swipe-to-up {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(calc(-1 * var(--distance)));
+  }
+}
+
+@keyframes swipe-from-down {
+  0% {
+    transform: translateY(var(--distance));
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
 @keyframes fade-out {
   from {
     opacity: 1;
@@ -88,7 +106,7 @@
   }
 }
 
-.swipe-right, .swipe-left {
+.swipe-right, .swipe-left, .swipe-down {
   --distance: 400px;
 }
 
@@ -118,6 +136,18 @@
 .swipe-left::view-transition-new(root) {
   animation:
     swipe-from-left var(--view-transition-duration) ease-in-out,
+    fade-in var(--view-transition-duration) ease-in-out;
+}
+
+.swipe-down::view-transition-old(root) {
+  animation:
+    swipe-to-up var(--view-transition-duration) ease-in-out,
+    fade-out var(--view-transition-duration) ease-in-out;
+}
+
+.swipe-down::view-transition-new(root) {
+  animation:
+    swipe-from-down var(--view-transition-duration) ease-in-out,
     fade-in var(--view-transition-duration) ease-in-out;
 }
 
