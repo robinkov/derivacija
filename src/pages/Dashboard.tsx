@@ -1,20 +1,19 @@
 'use client'
 
+import { ProfileNavActionData } from '@/assets/data/NavAction'
 import AccountCircle from '@/assets/svgs/AccountCircle'
 import LogoutIcon from '@/assets/svgs/LogoutIcon'
-import PaymentsIcon from '@/assets/svgs/PaymentsIcon'
 import Loader from '@/components/Loader'
 import Navbar from '@/components/Navbar'
 import Separator from '@/components/Separator'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Viewport, ViewportHeader, ViewportMain } from '@/components/Viewport'
 import { auth } from '@/config/firebase'
 import { useNavigation } from '@/hooks/navigation'
 import { selectAuth } from '@/state/auth/authSlice'
 import RequireAuth from '@/state/auth/RequireAuth'
 import RequireEmailVerified from '@/state/auth/RequireEmailVerified'
-import { DashboardIcon } from '@radix-ui/react-icons'
 import { signOut } from 'firebase/auth'
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -43,10 +42,6 @@ export const ProfileNavAction: React.FC = () => {
     navigation('/home', { animation: 'zoom-out' });
     signOut(auth).finally(() => setIsLoading(false));
   }
-  function handleNavigation() {
-    navigation('/dashboard', { animation: 'zoom-in' });
-  }
-
   const SheetMenu = (
     <Sheet>
       <SheetTrigger asChild>
@@ -61,12 +56,13 @@ export const ProfileNavAction: React.FC = () => {
         </SheetHeader>
         <div className='py-6 lg:py-4 space-y-4 lg:space-y-2 [&_button]:w-full [&_button]:justify-start [&_button]:text-base [&_button]:h-10 lg:[&_button]:text-sm'>
           <div className='space-y-1'>
-            <Button variant='ghost' onClick={handleNavigation}>
-              <DashboardIcon />Dashboard
-            </Button>
-            <Button variant='ghost'>
-              <PaymentsIcon />Payments
-            </Button>
+            { ProfileNavActionData(navigation).map((element) => (
+              <SheetClose asChild key={`${element.text}-key`}>
+                <Button variant='ghost' onClick={element.action}>
+                  {element.icon}{element.text}
+                </Button>
+              </SheetClose>
+            )) }
           </div>
           <Separator />
           <div>

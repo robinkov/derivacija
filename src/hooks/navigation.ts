@@ -2,17 +2,15 @@ import { flushSync } from 'react-dom'
 import * as Router from 'react-router-dom'
 
 type Animation = {
-  animation: 'swipe-right' | 'swipe-left' | 'swipe-down' | 'zoom-in' | 'zoom-out'
+  animation?: 'swipe-right' | 'swipe-left' | 'swipe-down' | 'zoom-in' | 'zoom-out'
 };
 
-type Navigation = (navigate: Router.NavigateFunction) => (to: Router.To, options?: Router.NavigateOptions & Animation) => void;
+export type Navigation = (to: Router.To, options?: Router.NavigateOptions & Animation) => void;
+type NavigationHook = (navigate: Router.NavigateFunction) => Navigation;
 
 /**
  * Custom hook to handle navigation with optional animations within the context of React Router.
  * @param to - The path to navigate to.
- * @param [animation] - The CSS class name for the animation to apply during navigation.
- *                      If provided, this class is temporarily added to the 
- *                      `<html>` element during the view transition.
  * @param [options] - Additional options for navigation.
  * @throws Throws an error if used outside the context of React Router
  * @example
@@ -20,9 +18,9 @@ type Navigation = (navigate: Router.NavigateFunction) => (to: Router.To, options
  * import * as Router from 'react-router-dom';
  * const navigation = useNavigation(Router.useNavigate());
  * // Basic usage with animation:
- * navigation('/home', 'fade-transition', { replace: true });
+ * navigation('/home', { animation: 'fade-transition', replace: true });
  * // Basic usage without animation:
- * navigation('/home', null, { replace: true });
+ * navigation('/home', { replace: true });
  * ```
  * CSS example for animation:
  * ```css
@@ -32,7 +30,7 @@ type Navigation = (navigate: Router.NavigateFunction) => (to: Router.To, options
  * }
  * ```
  */
-export const useNavigation: Navigation = (navigate: Router.NavigateFunction) => {
+export const useNavigation: NavigationHook = (navigate: Router.NavigateFunction) => {
   return (to, options) => {
 
     if (document.location.pathname == to) return;
