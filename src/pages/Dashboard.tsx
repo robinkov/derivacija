@@ -11,24 +11,25 @@ import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTi
 import { Viewport, ViewportHeader, ViewportMain } from '@/components/Viewport'
 import { auth } from '@/config/firebase'
 import { useNavigation } from '@/hooks/navigation'
-import { selectAuth } from '@/state/auth/authSlice'
 import RequireAuth from '@/state/auth/RequireAuth'
 import RequireEmailVerified from '@/state/auth/RequireEmailVerified'
+import RequireUser from '@/state/user/RequireUser'
 import { signOut } from 'firebase/auth'
 import React, { useState } from 'react'
-import { useSelector } from 'react-redux'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, Outlet, useNavigate, useOutlet } from 'react-router-dom'
 
 export default function Dashboard() {
-  const user = useSelector(selectAuth);
+  const outlet = useOutlet();
   return (
     <Viewport>
       <ViewportHeader>
         <Navbar action={<ProfileNavAction />} />
       </ViewportHeader>
-      <ViewportMain alignment='center'>
-        <h1 className='font-semibold text-4xl text-center'>Welcome to Derivacija!</h1>
-        <h3 className='font-semibold text-xl text-muted-foreground'>{user.email}</h3>
+      <ViewportMain>
+        <RequireUser
+          element={outlet ? <Outlet /> : <Navigate to='/dashboard/content' replace />}
+          loadingElement={<Loader />}
+        />
       </ViewportMain>
     </Viewport>
   );
@@ -49,7 +50,7 @@ export const ProfileNavAction: React.FC = () => {
           { isLoading ? <Loader className='size-full border-[0.2rem]' /> : <AccountCircle /> }
         </Button>
       </SheetTrigger>
-      <SheetContent style={{ viewTransitionName: 'nav-sheet' }} className='overflow-y-auto'>
+      <SheetContent style={{ viewTransitionName: 'sidebar' }} className='overflow-y-auto'>
         <SheetHeader>
           <SheetTitle className='text-2xl lg:text-lg'>Profile</SheetTitle>
           <SheetDescription className='hidden' />

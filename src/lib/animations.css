@@ -174,3 +174,9 @@
     zoom-out-from-out var(--view-transition-duration) ease-in-out,
     fade-in var(--view-transition-duration) ease-in-out;
 }
+
+::view-transition-old(sidebar) {
+  transform: translateX(100%);
+  transition-duration: 300ms;
+  mix-blend-mode: normal;
+}

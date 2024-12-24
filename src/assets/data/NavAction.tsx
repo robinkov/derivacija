@@ -18,6 +18,7 @@ export const ProfileNavActionData = (navigation: Navigation): NavAction[] => {
     {
       text: 'Payments',
       icon: <PaymentsIcon />,
+      action: () => { navigation('/dashboard/payments'); }
     }
   ];
 }

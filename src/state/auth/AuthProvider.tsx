@@ -5,7 +5,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from '@/state/store'
-import { setAuth, setLogout, User } from '@/state/auth/authSlice'
+import { setAuth, setLogout, AuthUser } from '@/state/auth/authSlice'
 
 type AuthProviderProps = {
   children?: React.ReactNode
@@ -29,7 +29,7 @@ export default function AuthProvider({
             // default role until server generates a valid one
             // ONLY when registered using Google Provider
             role: idTokenResult.claims['role'] || 'user'
-          } as User;
+          } as AuthUser;
           dispatch(setAuth(dispatchUser));
         } catch (error) {
           signOut(auth);

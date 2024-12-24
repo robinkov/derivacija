@@ -11,7 +11,7 @@ type AuthState = {
   role?: string,
 };
 
-export type User = Pick<Auth.User, 'uid' | 'email' | 'emailVerified'> & {
+export type AuthUser = Pick<Auth.User, 'uid' | 'email' | 'emailVerified'> & {
   role: string | null
 }
 
@@ -33,7 +33,7 @@ export const authSlice = createSlice({
     },
     setAuth: (
         state,
-        action: PayloadAction<User>
+        action: PayloadAction<AuthUser>
       ) => {
       const { uid, email, emailVerified, role } = action.payload;
       if (state.uid) {

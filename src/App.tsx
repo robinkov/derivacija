@@ -8,6 +8,7 @@ import RequireAuth from '@/state/auth/RequireAuth'
 import { Provider } from 'react-redux'
 import { store } from '@/state/store'
 import AuthProvider from '@/state/auth/AuthProvider'
+import UserProvider from '@/state/user/UserProvider'
 import Loader from '@/components/Loader'
 import Auth from '@/pages/Auth'
 import LoginForm from '@/state/auth/LoginForm'
@@ -72,7 +73,17 @@ const router = createBrowserRouter(
     },
     {
       path: '/dashboard',
-      element: <DashboardRoute />
+      element: <DashboardRoute />,
+      children: [
+        {
+          path: 'content',
+          element: <p>content</p>
+        },
+        {
+          path: 'payments',
+          element: <p>payments</p>
+        }
+      ]
     },
     {
       path: '/email-verification',
@@ -92,7 +103,9 @@ function App() {
     <Provider store={store}>
       <ThemeProvider>
         <AuthProvider>
-          <RouterProvider router={router} />
+          <UserProvider>
+            <RouterProvider router={router} />
+          </UserProvider>
         </AuthProvider>
       </ThemeProvider>
     </Provider>
