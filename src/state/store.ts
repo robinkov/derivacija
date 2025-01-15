@@ -8,6 +8,7 @@ export const store = configureStore({
     auth: authSlice,
     user: userSlice
   },
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
   devTools: import.meta.env.DEV
 });
 

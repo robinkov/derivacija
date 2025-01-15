@@ -180,3 +180,8 @@
   transition-duration: 300ms;
   mix-blend-mode: normal;
 }
+
+::view-transition-new(sidebar) {
+  transform: translateX(100%);
+  transition-duration: 300ms;
+}

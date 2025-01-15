@@ -19,6 +19,9 @@
     },
     "hosting": {
       "port": 5000
+    },
+    "storage": {
+      "port": 9199
     }
   },
   "hosting": {
@@ -53,5 +56,8 @@
   ],
   "extensions": {
     "firestore-send-email-88pw": "firebase/firestore-send-email@0.1.34"
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }

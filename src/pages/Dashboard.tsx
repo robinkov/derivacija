@@ -28,7 +28,7 @@ export default function Dashboard() {
       <ViewportMain>
         <RequireUser
           element={outlet ? <Outlet /> : <Navigate to='/dashboard/content' replace />}
-          loadingElement={<Loader />}
+          loadingElement={<Loader className='m-auto size-10' />}
         />
       </ViewportMain>
     </Viewport>

@@ -5,7 +5,7 @@ import { AppDispatch } from "../store"
 import { useEffect } from "react"
 import { doc, onSnapshot } from "firebase/firestore"
 import { db } from "@/config/firebase"
-import { setIsFetched, setLogout } from "@/state/user/userSlice"
+import { setIsFetched, setLogout, setUser, UserState } from "@/state/user/userSlice"
 import { useSelector } from "react-redux"
 import { selectAuth } from "@/state/auth/authSlice"
 
@@ -22,6 +22,8 @@ export default function UserProvider({
     if (uid) {
       const observer = onSnapshot(doc(db, 'users', uid), (doc) => {
         if (doc.exists()) {
+          const { email, permissions } = doc.data() as Omit<UserState, 'isFetched'>;
+          dispatch(setUser({ email, permissions }));
           dispatch(setIsFetched(true));
         } else {
           dispatch(setIsFetched(false));

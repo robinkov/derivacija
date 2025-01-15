@@ -3,9 +3,11 @@ import { getAnalytics } from 'firebase/analytics'
 import { getAuth } from 'firebase/auth'
 import { getFunctions } from 'firebase/functions'
 import { getFirestore } from 'firebase/firestore'
+import { getStorage } from 'firebase/storage'
 import { connectAuthEmulator } from 'firebase/auth'
 import { connectFunctionsEmulator } from 'firebase/functions'
 import { connectFirestoreEmulator } from 'firebase/firestore'
+import { connectStorageEmulator } from 'firebase/storage'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAfkZkpe1XKyq1p9Z_mCBWVQX6uWu5Pr2g',
@@ -23,10 +25,12 @@ export const analytics = getAnalytics(app);
 export const auth = getAuth(app);
 export const functions = getFunctions(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 // emulators
 if (import.meta.env.DEV) {
   connectAuthEmulator(auth, 'http://localhost:9099');
   connectFunctionsEmulator(functions, 'localhost', 5001);
   connectFirestoreEmulator(db, 'localhost', 8080);
+  connectStorageEmulator(storage, 'localhost', 9199);
 }

@@ -10,9 +10,9 @@ import { useNavigate } from 'react-router-dom'
 type NavbarProviderProps = React.ComponentPropsWithoutRef<'div'> & {
   action?: React.ReactNode
 };
-const NavbarProvider: React.FC<NavbarProviderProps> = (
-  { children, className, ...props }
-) => (
+const NavbarProvider: React.FC<NavbarProviderProps> = ({
+  children, className, ...props
+}) => (
   <div
     className={cn(
       'flex flex-col items-center overflow-y-hidden',
