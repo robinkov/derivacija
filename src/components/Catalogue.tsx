@@ -60,7 +60,7 @@ type CatalogueCardProps = React.ComponentPropsWithoutRef<typeof Card> & {
 const CatalogueCard: React.FC<CatalogueCardProps> = ({
   title, description, image, ...props
 }) => (
-  <Card className='border-none h-fit hover:bg-accent transition-[background] cursor-pointer rounded-md' {...props}>
+  <Card className='border-none bg-background shadow-none h-fit cursor-pointer rounded-md' {...props}>
     <CardContent className='p-0'>
       <AspectRatio ratio={16/9} className='flex overflow-hidden justify-center items-center rounded-md'>
         <img src={image ? image : DefaultImage} alt={title} className='w-full' />
@@ -68,9 +68,9 @@ const CatalogueCard: React.FC<CatalogueCardProps> = ({
     </CardContent>
     {
       (title || description) &&
-      <CardFooter className='px-2 py-1 pb-2'>
+      <CardFooter className='px-1 py-1'>
         <div>
-          {title && <CardTitle className='text-sm md:text-base'>{title}</CardTitle>}
+          {title && <CardTitle className='text-base'>{title}</CardTitle>}
           {description && <CardDescription className='text-xs md:text-sm text-wrap'>{description}</CardDescription>}
         </div>
       </CardFooter>

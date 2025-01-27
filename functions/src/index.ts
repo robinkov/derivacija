@@ -96,11 +96,13 @@ export const onUserCreated = functions.auth.user().onCreate(async (user) => {
   try {
     const query = getFirestore().collection('users').doc(uid);
     let code;
-    let userObj: any = { email, uid };
+    const userObj = { email, uid };
     if (!user.emailVerified) {
       code = emailCodeGenerator();
       const verificationRef = await sendVerificationEmail(email, code);
-      userObj = { ...userObj, otpCode: code, otpEmailRef: verificationRef };
+      await query.collection('verifiers').doc('email').set({
+        otpCode: code, otpEmailRef: verificationRef
+      });
     }
     return query.set(userObj);
   } catch (error) {
@@ -121,11 +123,16 @@ export const verifyOTPCode = onCall(async (request) => {
     throw new HttpsError('invalid-argument', 'Kod nije unesen.');
   }
 
-  const response = await getFirestore().collection('users').where('otpCode', '==', otpCode).get();
+  const response = await getFirestore().doc(`users/${request.auth.uid}/verifiers/email`).get();
 
   // if response is empty or OTP code does not belong to this user
-  if (response.empty || response.docs.filter((doc) => doc.data().email === request.auth?.token.email).length === 0) {
-    throw new HttpsError('invalid-argument', 'Uneseni kod je netočan.');
+  if (!response.exists) {
+    throw new HttpsError('not-found', 'Korisnik nije pronaden.');
+  } else {
+    const data = response.data();
+    if (!data || data.otpCode !== otpCode) {
+      throw new HttpsError('permission-denied', 'Unesen je krivi kod.');
+    }
   }
 
   const uid = request.auth.uid;
@@ -144,7 +151,7 @@ export const resendOTPCode = onCall(async (request) => {
   
   const uid = request.auth.uid;
   const email = request.auth.token.email;
-  const userDocSnapshot = await getFirestore().collection('users').doc(uid).get();
+  const userDocSnapshot = await getFirestore().doc(`users/${uid}/verifiers/email`).get();
   const userDocData = userDocSnapshot.data();
   const code = emailCodeGenerator();
   
@@ -165,7 +172,7 @@ export const resendOTPCode = onCall(async (request) => {
   try {
     if (!email) throw new Error('Token ne sadrži email adresu.');
     const verificationRef = await sendVerificationEmail(email, code);
-    return getFirestore().collection('users').doc(uid).update({
+    return getFirestore().doc(`users/${uid}/verifiers/email`).update({
       otpCode: code,
       otpEmailRef: verificationRef,
     });
