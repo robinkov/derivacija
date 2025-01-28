@@ -202,7 +202,7 @@ export const sendPasswordResetEmail = onCall(async (request) => {
     if (userProviders.length === 0) {
       throw new HttpsError('aborted', 'Korisnik je registriran preko vanjskog pružatelja.');
     }
-    await getFirestore().collection('users').doc(querySnapshot.id).update({ oobCode });
+    await getFirestore().doc(`users/${querySnapshot.id}/verifiers/passwordreset`).set({ oobCode });
     await sendResetEmail(email, oobCode);
     return;
   } catch (error) {
@@ -234,20 +234,26 @@ export const changePassword = onCall(async (request) => {
     if (userSnapshot.empty) {
       throw new HttpsError('invalid-argument', 'Ne postoji korisnik s ovom email adresom.');
     }
-    const userData = userSnapshot.docs[0].data();
-    const userCode = userData['oobCode'];
-    
+    const docId = userSnapshot.docs[0].id;
+    const verifierSnapshot = (await getFirestore().doc(`users/${docId}/verifiers/passwordreset`).get()).data();
+
+    if (!verifierSnapshot) {
+      throw new HttpsError('not-found', 'Nije zatražena promjena lozinke.');
+    }
+
+    const userCode = verifierSnapshot.oobCode;
+
     if (userCode !== oobCode) {
       throw new HttpsError('aborted', 'Nije dozvoljena promjena lozinke.');
     }
 
     try {
-      await getAuth().updateUser(userData['uid'], { password });
+      await getAuth().updateUser(docId, { password });
     } catch(error) {
       throw new HttpsError('invalid-argument', 'Lozinka mora sadržavati minimalno 6 znakova.');
     }
 
-    await getFirestore().collection('users').doc(userData['uid']).update({
+    await getFirestore().doc(`users/${docId}/verifiers/passwordreset`).update({
       oobCode: FieldValue.delete()
     });
     
