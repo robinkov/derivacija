@@ -5,9 +5,15 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if false;
     }
+
     match /users/{userId} {
       allow read: if isOwner(userId);
       allow update: if isOwner(userId) && allowFieldsToChange(['log']);
+    }
+
+    match /content/{contentDocId} {
+      allow read: if isSignedIn();
+      allow write: if false;
     }
 
     /// Functions ///

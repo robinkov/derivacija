@@ -18,6 +18,7 @@ import EmailVerification from '@/pages/EmailVerification'
 import RequireEmailVerified from '@/state/auth/RequireEmailVerified'
 import PasswordReset, { ChangePasswordForm, SendResetLink } from '@/pages/PasswordReset'
 import Content from '@/pages/Content'
+import ContentProvider from './state/content/ContentProvider'
 
 const router = createBrowserRouter(
   [
@@ -78,7 +79,7 @@ const router = createBrowserRouter(
       children: [
         {
           path: 'content',
-          element: <Content />
+          element: <ContentProvider><Content/></ContentProvider>
         },
         {
           path: 'payments',
