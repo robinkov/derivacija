@@ -18,7 +18,8 @@ import EmailVerification from '@/pages/EmailVerification'
 import RequireEmailVerified from '@/state/auth/RequireEmailVerified'
 import PasswordReset, { ChangePasswordForm, SendResetLink } from '@/pages/PasswordReset'
 import Content from '@/pages/Content'
-import ContentProvider from './state/content/ContentProvider'
+import ContentProvider from '@/state/content/ContentProvider'
+import RequireContent from '@/state/content/RequireContent'
 
 const router = createBrowserRouter(
   [
@@ -79,7 +80,13 @@ const router = createBrowserRouter(
       children: [
         {
           path: 'content',
-          element: <ContentProvider><Content/></ContentProvider>
+          element: <ContentProvider>
+            <RequireContent
+              element={<Content />}
+              fallbackElement={<Error code={401} description='Greška kod dohvaćanja sadržaja.' />}
+              loadingElement={<Loader className='size-10 m-auto' />}
+            />
+          </ContentProvider>
         },
         {
           path: 'payments',

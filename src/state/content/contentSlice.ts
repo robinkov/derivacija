@@ -48,6 +48,10 @@ export const selectContent = (id: string) => (state: RootState) => {
   return match;
 }
 
+export const selectContentStatus = (state: RootState) => {
+  return { isError: state.content.isError, isLoading: state.content.isLoading };
+};
+
 export const { setCollection, setIsError, setIsLoading } = contentSlice.actions;
 
 export type { ContentProps };
